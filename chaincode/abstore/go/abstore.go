@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hyperledger/fabric-chaincode-go/pkg/statebased"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
 )
@@ -78,7 +79,13 @@ func (t *ABstore) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
 	} else if function == "query" {
 		// the old "Query" is now implemtned in invoke
 		return t.query(stub, args)
-	}
+	}else if function == "addTen" {
+                //加10
+		return t.addTen(stub, args)
+	}else if function=="endorsement"{
+                //设置背书策略
+                return t.endorsement(stub, args)
+        }
 
 	return shim.Error("Invalid invoke function name. Expecting \"invoke\" \"delete\" \"query\"")
 }
@@ -184,6 +191,81 @@ func (t *ABstore) query(stub shim.ChaincodeStubInterface, args []string) pb.Resp
 	fmt.Printf("Query Response:%s\n", jsonResp)
 	return shim.Success(Avalbytes)
 }
+// 加10 
+func (t *ABstore) addTen(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 1 {
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+
+	A := args[0]
+
+	
+	// Get the state from the ledger
+	// TODO: will be nice to have a GetAllState call to ledger
+	Avalbytes, err := stub.GetState(A)
+	if err != nil {
+		return shim.Error("Failed to get state")
+	}
+	if Avalbytes == nil {
+		return shim.Error("Entity not found")
+	}
+         var Aval int // Asset holdings
+
+        Aval, _ = strconv.Atoi(string(Avalbytes))
+	Aval += 10
+	fmt.Printf("Query Response:%s\n", Aval)
+
+	
+		// Write the state back to the ledger
+	err = stub.PutState(A, []byte(strconv.Itoa(Aval)))
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+
+
+	return shim.Success(nil)
+}
+
+
+
+// 设置键级别背书策略
+func (t *ABstore) endorsement(stub shim.ChaincodeStubInterface, args []string) pb.Response {
+	if len(args) != 3 {
+		return shim.Error("Incorrect number of arguments. Expecting the key and EP to be set.")
+	}
+	key := args[0]
+	EP := args[1]
+        op := args[2]
+        //初始化背书策略
+ 
+	newEP, err := statebased.NewStateEP(nil)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+        if op == "del"{
+           //删除背书组织
+	    newEP.DelOrgs(EP)
+        }else{
+            //添加背书组织
+	    err = newEP.AddOrgs(statebased.RoleTypeMember, EP)
+        }
+        if err != nil {
+		return shim.Error(err.Error())
+	}
+
+         
+	policyByte, err := newEP.Policy()
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+        //保存背书策略
+	err = stub.SetStateValidationParameter(key, policyByte)
+	if err != nil {
+		return shim.Error(err.Error())
+	}
+	return shim.Success(nil)
+}
+
 
 func main() {
 	err := shim.Start(new(ABstore))
