@@ -1,0 +1,28 @@
+Generating certs and genesis block for channel 'mychannel' with CLI timeout of '10' seconds and CLI delay of '3' seconds
+proceeding ...
+/home/go/src/github.com/hyperledger/fabric/fabric-samples/bin/cryptogen
+
+##########################################################
+##### Generate certificates using cryptogen tool #########
+##########################################################
+org1.example.com
+org2.example.com
+
+Generate CCP files for Org1 and Org2
+/home/go/src/github.com/hyperledger/fabric/fabric-samples/bin/configtxgen
+##########################################################
+#########  Generating Orderer Genesis block ##############
+##########################################################
+
+#################################################################
+### Generating channel configuration transaction 'channel.tx' ###
+#################################################################
+
+#################################################################
+#######    Generating anchor peer update for Org1MSP   ##########
+#################################################################
+
+#################################################################
+#######    Generating anchor peer update for Org2MSP   ##########
+#################################################################
+
