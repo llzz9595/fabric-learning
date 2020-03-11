@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"strconv"
+        "os"
 
 	"github.com/hyperledger/fabric-chaincode-go/pkg/statebased"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
@@ -268,8 +269,20 @@ func (t *ABstore) endorsement(stub shim.ChaincodeStubInterface, args []string) p
 
 
 func main() {
-	err := shim.Start(new(ABstore))
+
+	server := &shim.ChaincodeServer{
+		CCID:    os.Getenv("CHAINCODE_CCID"),
+		Address: os.Getenv("CHAINCODE_ADDRESS"),
+		CC:      new(ABstore),
+		TLSProps: shim.TLSProperties{
+				Disabled: true,
+		},
+	}
+
+	// Start the chaincode external server
+	err := server.Start()
+
 	if err != nil {
-		fmt.Printf("Error starting ABstore chaincode: %s", err)
+		fmt.Printf("Error starting Marbles02 chaincode: %s", err)
 	}
 }

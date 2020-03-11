@@ -17,6 +17,7 @@ services:
         - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
         - ../crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
         - orderer.example.com:/var/hyperledger/production/orderer
+        - ../external:/opt/gopath/src/github.com/hyperledger/fabric/peer/external
     ports:
       - 7050:7050
 

@@ -1,0 +1,98 @@
+
+###############################################################################
+chaincode:
+
+    # The id is used by the Chaincode stub to register the executing Chaincode
+    # ID with the Peer and is generally supplied through ENV variables
+    # the `path` form of ID is provided when installing the chaincode.
+    # The `name` is used for all other requests and can be any string.
+    id:
+        path: github.com/hyperledger/fabric/fabric-samples/first-network/externalBuilderTest/abstore/go
+        name: mycc_ex
+
+    # Generic builder environment, suitable for most chaincode types
+    builder: $(DOCKER_NS)/fabric-ccenv:$(TWO_DIGIT_VERSION)
+
+    # Enables/disables force pulling of the base docker images (listed below)
+    # during user chaincode instantiation.
+    # Useful when using moving image tags (such as :latest)
+    pull: false
+
+    golang:
+        # golang will never need more than baseos
+        runtime: $(DOCKER_NS)/fabric-baseos:$(TWO_DIGIT_VERSION)
+
+        # whether or not golang chaincode should be linked dynamically
+        dynamicLink: false
+
+    java:
+        # This is an image based on java:openjdk-8 with addition compiler
+        # tools added for java shim layer packaging.
+        # This image is packed with shim layer libraries that are necessary
+        # for Java chaincode runtime.
+        runtime: $(DOCKER_NS)/fabric-javaenv:$(TWO_DIGIT_VERSION)
+
+    node:
+        # This is an image based on node:$(NODE_VER)-alpine
+        runtime: $(DOCKER_NS)/fabric-nodeenv:$(TWO_DIGIT_VERSION)
+
+    # List of directories to treat as external builders and launchers for
+    # chaincode. The external builder detection processing will iterate over the
+    # builders in the order specified below.
+    externalBuilders: 
+        - path: github.com/hyperledger/fabric/fabric-samples/first-network 
+          name: descriptive-builder-name
+        #  environmentWhitelist:
+        #      - ENVVAR_NAME_TO_PROPAGATE_FROM_PEER
+        #      - GOPROXY
+
+    # The maximum duration to wait for the chaincode build and install process
+    # to complete.
+    installTimeout: 300s
+
+    # Timeout duration for starting up a container and waiting for Register
+    # to come through.
+    startuptimeout: 300s
+
+    # Timeout duration for Invoke and Init calls to prevent runaway.
+    # This timeout is used by all chaincodes in all the channels, including
+    # system chaincodes.
+    # Note that during Invoke, if the image is not available (e.g. being
+    # cleaned up when in development environment), the peer will automatically
+    # build the image, which might take more time. In production environment,
+    # the chaincode image is unlikely to be deleted, so the timeout could be
+    # reduced accordingly.
+    executetimeout: 30s
+
+    # There are 2 modes: "dev" and "net".
+    # In dev mode, user runs the chaincode after starting peer from
+    # command line on local machine.
+    # In net mode, peer will run chaincode in a docker container.
+    mode: net
+
+    # keepalive in seconds. In situations where the communiction goes through a
+    # proxy that does not support keep-alive, this parameter will maintain connection
+    # between peer and chaincode.
+    # A value <= 0 turns keepalive off
+    keepalive: 0
+
+    # system chaincodes whitelist. To add system chaincode "myscc" to the
+    # whitelist, add "myscc: enable" to the list below, and register in
+    # chaincode/importsysccs.go
+    system:
+        _lifecycle: enable
+        cscc: enable
+        lscc: enable
+        escc: enable
+        vscc: enable
+        qscc: enable
+
+    # Logging section for the chaincode container
+    logging:
+      # Default level for all loggers within the chaincode container
+      level:  info
+      # Override default level for the 'shim' logger
+      shim:   warning
+      # Format for the chaincode container logs
+      format: '%{color}%{time:2006-01-02 15:04:05.000 MST} [%{module}] %{shortfunc} -> %{level:.4s} %{id:03x}%{color:reset} %{message}'
+

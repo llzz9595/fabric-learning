@@ -1,0 +1,23 @@
+version: '2'
+networks:
+ default:
+  external:
+   name: net_byfn
+services:
+  #合约容器
+  mycc2:
+    #定义主机名
+    container_name: mycc2.chiancode.com
+    #使用的镜像
+    image: chaincode/mycc2:1.0
+    #容器的映射端口
+    ports:
+      - 9999:9999
+    networks:
+      - default
+    #环境变量
+    privileged: true
+    environment:
+      - CHAINCODE_CCID=mycc2:6be5ebad4dabfda4e055b936658bf29a28079a2a4188915013998591426ac454
+      - CHAINCODE_ADDRESS=0.0.0.0:9999
+
